@@ -318,7 +318,7 @@ if __name__ == "__main__":
 
     print("--------------------------------------")
     print("TRTLLM output_ids: ", tllm_output_ids)
-    print("TRTLLM output length: ", tllm_output_ids[0].shape[1])
+    print("TRTLLM output length: ", tllm_output_ids["output_ids"][0].shape[1])
     print("TRTLLM tokens: ",
-          tokenizer.decode(tllm_output_ids[0][0], skip_special_tokens=True))
+          tokenizer.decode(tllm_output_ids["output_ids"][0][0], skip_special_tokens=True))
     print("--------------------------------------")

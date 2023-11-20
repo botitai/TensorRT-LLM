@@ -160,7 +160,8 @@ class _Runtime(object):
         self.engine = self.runtime.deserialize_cuda_engine(engine_buffer)
         assert self.engine is not None
         # The device_memory_size stores the memory required by the largest profile
-        address = CUASSERT(cudart.cudaMalloc(self.engine.device_memory_size))[0]
+        address = CUASSERT(cudart.cudaMalloc(
+            self.engine.device_memory_size))[0]
         self.address = address
 
         # cuda graph ping-pong instances
@@ -212,7 +213,8 @@ class _Runtime(object):
                 dtype = self.engine.get_tensor_dtype(name)
                 shape = context.get_tensor_shape(name)
                 buffer_dict[name] = torch.zeros(tuple(shape),
-                                                dtype=trt_dtype_to_torch(dtype),
+                                                dtype=trt_dtype_to_torch(
+                                                    dtype),
                                                 device='cuda')
             assert buffer_dict[name].is_contiguous(
             ), f"{name} is not contiguous()"
@@ -269,8 +271,8 @@ class SamplingConfig:
     presence_penalty: Union[float, torch.Tensor] = field(default=0.0)
     use_beam_hyps: bool = field(default=True)
 
-    ## None here means user didn't set it, and dynamicDecodeOp.cpp take optional value
-    ## The real default value is set in dynamicDecodeOp.cpp when it's None
+    # None here means user didn't set it, and dynamicDecodeOp.cpp take optional value
+    # The real default value is set in dynamicDecodeOp.cpp when it's None
     beam_search_diversity_rate: Union[float, torch.Tensor] = field(init=False,
                                                                    default=None)
     random_seed: Union[int, torch.Tensor] = field(init=False, default=None)
@@ -319,7 +321,7 @@ class GenerationSession(object):
         self.top_p_decay = None
         self.top_p_min = None
         self.top_p_reset_ids = None
-        #TODO: in tensorrt_llm/cpp/tensorrt_llm/thop/dynamicDecodeOp.cpp it's T, can be float or half?
+        # TODO: in tensorrt_llm/cpp/tensorrt_llm/thop/dynamicDecodeOp.cpp it's T, can be float or half?
         self.embedding_bias_opt = None
 
         self.buffer = None
@@ -428,8 +430,8 @@ class GenerationSession(object):
             logger.error(f"Expected tensor names: {expected_tensor_names}")
             logger.error(f"Found tensor names: {found_tensor_names}")
             raise RuntimeError(
-                "Tensor names in engine are not the same as expected, to use this GenerationSession, " \
-                    "you need to use GPTLMHeadModel.prepare_inputs to create TRT Network inputs."
+                "Tensor names in engine are not the same as expected, to use this GenerationSession, "
+                "you need to use GPTLMHeadModel.prepare_inputs to create TRT Network inputs."
             )
         if self.debug_mode:
             self.debug_tensors = list(
@@ -544,7 +546,8 @@ class GenerationSession(object):
                 0] == batch_size, f"scfg.top_k.shape[0] ({scfg.top_k.shape[0]}) must equal to batch_size ({batch_size})"
             self.top_k = scfg.top_k
         else:
-            self.top_k = torch.full([batch_size], scfg.top_k, dtype=torch.int32)
+            self.top_k = torch.full(
+                [batch_size], scfg.top_k, dtype=torch.int32)
 
         if isinstance(scfg.top_p, torch.Tensor):
             assert scfg.top_p.dtype == torch.float32, f"scfg.top_p.dtype ({scfg.top_p.dtype}) must be torch.float32"
@@ -662,7 +665,8 @@ class GenerationSession(object):
         else:
             padded_input_ids = input_ids
         if scfg.num_beams > 1:
-            tiled_input_ids = _tile_beam_width(padded_input_ids, scfg.num_beams)
+            tiled_input_ids = _tile_beam_width(
+                padded_input_ids, scfg.num_beams)
             tiled_input_ids = tiled_input_ids.reshape(batch_size,
                                                       scfg.num_beams,
                                                       max_context_length)
@@ -854,7 +858,8 @@ class GenerationSession(object):
             set_peer_access(self.mapping)
             float_element_size = torch.tensor([],
                                               dtype=torch.float).element_size()
-            buffer_size = batch_size * beam_width * max_context_length * self.hidden_size * self.mapping.tp_size * float_element_size
+            buffer_size = batch_size * beam_width * max_context_length * \
+                self.hidden_size * self.mapping.tp_size * float_element_size
             barrier_size = IpcMemory.IPC_BARRIERS_SIZE_PER_GPU * self.mapping.tp_size
 
             self.ipc_buffers = IpcMemory(self.mapping, buffer_size)
@@ -1574,7 +1579,8 @@ class GenerationSession(object):
                     t = self.debug_buffer[k]
                     t = t.view(-1, t.shape[-1])  # consolidate all but last dim
                     # convert tensor name to valid file name
-                    fname = "".join(c for c in k if (c.isalnum() or c in "._-"))
+                    fname = "".join(c for c in k if (
+                        c.isalnum() or c in "._-"))
                     np.savetxt(f"{fname}-step{step}.txt", t.cpu().detach())
             if logits is not None:
                 # [batch_size x beam_width, vocab_size_padded] -> [batch_size, beam_width, vocab_size_padded]
@@ -1813,7 +1819,8 @@ class GenerationSession(object):
 
         self.__setup_decoder(input_ids, scfg, host_context_lengths)
         if not self.buffer_allocated:
-            raise RuntimeError('Buffer not allocated, please call setup first!')
+            raise RuntimeError(
+                'Buffer not allocated, please call setup first!')
 
         sequence_limit_lengths = torch.full((batch_size, 1),
                                             self.max_seq_length,
@@ -1832,17 +1839,17 @@ class GenerationSession(object):
                 beam_width,
                 self.max_seq_length,
             ),
-                       0,
-                       dtype=torch.int32,
-                       device=self.device),
+                0,
+                dtype=torch.int32,
+                device=self.device),
             torch.full((
                 batch_size,
                 beam_width,
                 self.max_seq_length,
             ),
-                       0,
-                       dtype=torch.int32,
-                       device=self.device)
+                0,
+                dtype=torch.int32,
+                device=self.device)
         ]  # ping-pong buffers
 
         hidden_states = None
