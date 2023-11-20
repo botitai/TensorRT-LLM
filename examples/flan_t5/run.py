@@ -55,6 +55,7 @@ def read_config(config_path: Path):
         cross_attention=cross_attention,
         has_position_embedding=has_position_embedding,
         has_token_type_embedding=has_token_type_embedding,
+        gather_all_token_logits=True,
     )
 
     dtype = config["builder_config"]["precision"]
@@ -172,7 +173,8 @@ class TRTLLMEncDecModel:
                     dtype = engine.get_tensor_dtype(name)
                     shape = context.get_tensor_shape(name)
                     outputs[name] = torch.zeros(tuple(shape),
-                                                dtype=trt_dtype_to_torch(dtype),
+                                                dtype=trt_dtype_to_torch(
+                                                    dtype),
                                                 device='cuda')
                     context.set_tensor_address(name, outputs[name].data_ptr())
         # -------------------------------------------
@@ -244,6 +246,7 @@ class TRTLLMEncDecModel:
             sampling_config,
             encoder_output=encoder_output,
             encoder_input_lengths=encoder_input_lengths,
+            return_dict=True,
         )
         # output_ids = self.decoder_session.decode_batch(
         #     decoder_input_ids,
@@ -271,7 +274,8 @@ if __name__ == "__main__":
 
     context_str = "Rocketbook Frixion is an amazing pen"
     query_str = "Is Frixion a good pen?"
-    input_text = DEFAULT_TEXT_QA_PROMPT_TMPL.format(context_str=context_str, query_str=query_str)
+    input_text = DEFAULT_TEXT_QA_PROMPT_TMPL.format(
+        context_str=context_str, query_str=query_str)
 
     # input_text = "i"
     tokenizer = AutoTokenizer.from_pretrained(args.tokenizer)

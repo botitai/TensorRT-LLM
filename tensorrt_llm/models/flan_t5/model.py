@@ -284,8 +284,7 @@ class FlanT5DecoderLayer(Module):
             tp_size=tp_size,
             dtype=dtype,
             cross_attention=True,
-            relative_attention=
-            False,  # Cross attention has no relative attention bias
+            relative_attention=False,  # Cross attention has no relative attention bias
             max_distance=max_distance,
             num_buckets=num_buckets,
             position_embedding_type=PositionEmbeddingType.learned_absolute)
@@ -705,7 +704,7 @@ class FlanT5DecoderModel(Module):
         kv_cache_params=None,
         attention_params=None,
     ):
-        # assert last_token_ids is not None, "Expecting last token ids to be not None"
+        assert last_token_ids is not None, "Expecting last token ids to be not None"
         assert isinstance(decoder_input_ids, Tensor)
 
         hidden_states = self.embedding(decoder_input_ids, position_ids,
@@ -763,7 +762,8 @@ class FlanT5DecoderModel(Module):
 
         if use_cache:
             for i, present in enumerate(presents):
-                present[0].mark_output(f'present_key_value_{i}', self._kv_dtype)
+                present[0].mark_output(
+                    f'present_key_value_{i}', self._kv_dtype)
                 present[1].mark_output(f'cross_present_key_value_{i}',
                                        self._kv_dtype)
             return (lm_logits, tuple(presents))
@@ -864,7 +864,8 @@ class FlanT5DecoderModel(Module):
                                       dtype=trt.int32,
                                       shape=[-1, -1],
                                       dim_range=OrderedDict([
-                                          ('batch_size_beam_width', [bb_range]),
+                                          ('batch_size_beam_width',
+                                           [bb_range]),
                                           ('input_len', [inlen_range]),
                                       ]))
             if self.has_token_type_embedding:
@@ -932,13 +933,12 @@ class FlanT5DecoderModel(Module):
             dim_range=OrderedDict([("encoder_max_input_length",
                                     [encoder_inlen_range])]),
         )
-        # last_token_ids = Tensor(
-        #     name="last_token_ids",
-        #     dtype=trt.int32,
-        #     shape=[-1],
-        #     dim_range=OrderedDict([("batch_size_last_token_ids", [bb_range])]),
-        # )
-        last_token_ids = None
+        last_token_ids = Tensor(
+            name="last_token_ids",
+            dtype=trt.int32,
+            shape=[-1],
+            dim_range=OrderedDict([("batch_size_last_token_ids", [bb_range])]),
+        )
         if not use_gpt_attention_plugin:
             attention_mask = Tensor(
                 name='attention_mask',
