@@ -144,7 +144,7 @@ def parse_arguments(args, component):
     if args.model_dir is not None:
         logger.info(f"Setting model configuration from {args.model_dir}.")
         args = parse_config(
-            Path(args.model_dir) + "config.ini", component, args)
+            Path(args.model_dir) / "config.ini", component, args)
     plugins_args = [
         'use_bert_attention_plugin', 'use_gpt_attention_plugin',
         'use_gemm_plugin', 'use_layernorm_plugin', 'use_lookup_plugin'
