@@ -129,6 +129,10 @@ def parse_arguments(args, component):
         default=False,
         choices=['float16', 'float32', 'bfloat16'],
         help="Activates the lookup plugin which enables embedding sharing.")
+    
+    parser.add_argument('--gather_all_token_logits',
+        action='store_true',
+        default=True)
 
     args = parser.parse_args(args)
     logger.set_level(args.log_level)
@@ -322,6 +326,7 @@ def build(rank, args):
             cross_attention=(args.component == 'decoder'),
             has_position_embedding=args.has_position_embedding,
             has_token_type_embedding=args.has_token_type_embedding,
+            gather_all_token_logits=args.gather_all_token_logits,
         )
 
         engine_name = get_engine_name(MODEL_NAME, args.dtype, world_size,

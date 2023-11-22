@@ -66,7 +66,7 @@ def read_config(config_path: Path):
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--max_new_tokens", type=int, required=True)
+    parser.add_argument("--max_new_tokens", type=int, default=1)
     parser.add_argument("--log_level", type=str, default="error")
     parser.add_argument("--engine_dir", type=str, default="trt_engines")
     parser.add_argument("--engine_name", type=str, default="enc_dec")
@@ -248,12 +248,6 @@ class TRTLLMEncDecModel:
             encoder_input_lengths=encoder_input_lengths,
             return_dict=True,
         )
-        # output_ids = self.decoder_session.decode_batch(
-        #     decoder_input_ids,
-        #     sampling_config,
-        #     encoder_output=encoder_output,
-        #     encoder_input_lengths=encoder_input_lengths,
-        # )
         torch.cuda.synchronize()
 
         return output_ids
