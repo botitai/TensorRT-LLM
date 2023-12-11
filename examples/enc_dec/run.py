@@ -470,7 +470,14 @@ if __name__ == "__main__":
     inference_dtype = tllm_model.encoder_model_config.dtype
 
     if tensorrt_llm.mpi_rank() == 0:
-        output_ids = tllm_output_ids[:, 0, :]
+        
+        print("--------------------------------------")
+        print("TRT-LLM output keys: ", ", ".join(list(tllm_output_ids.keys())))
+        print("Shape of output_ids: ", tllm_output_ids["output_ids"].shape )
+        print("Shape of context_logits: ", tllm_output_ids["context_logits"].shape )
+        print("Shape of generation_logits: ", torch.cat([torch.unsqueeze(tensor,0) for tensor in tllm_output_ids["generation_logits"]], axis=0).shape)
+        
+        output_ids = tllm_output_ids["output_ids"][:, 0, :]
         output_text = tokenizer.batch_decode(output_ids,
                                              skip_special_tokens=True)
         decoder_input_lengths = (decoder_input_ids !=
