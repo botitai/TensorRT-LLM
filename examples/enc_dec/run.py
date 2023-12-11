@@ -73,7 +73,8 @@ def read_config(config_path: Path):
         has_position_embedding=has_position_embedding,
         has_token_type_embedding=has_token_type_embedding,
         use_custom_all_reduce=use_custom_all_reduce,
-        dtype=dtype)
+        dtype=dtype,
+        gather_all_token_logits=True)
 
     return model_config, tp_size, pp_size, gpus_per_node, dtype
 
@@ -364,6 +365,7 @@ class TRTLLMEncDecModel:
             sampling_config,
             encoder_output=encoder_output,
             encoder_input_lengths=encoder_input_lengths,
+            return_dict=True,
         )
         torch.cuda.synchronize()
 

@@ -841,8 +841,8 @@ class DecoderModel(Module, GenerationMixin):
         else:
             assert isinstance(hidden_states, Tensor)
 
-        if self.mapping.is_last_pp_rank():
-            assert last_token_ids is not None, "Expecting last token ids to be not None"
+        # if self.mapping.is_last_pp_rank():
+        #     assert last_token_ids is not None, "Expecting last token ids to be not None"
 
         # In PP, layer 0 has ids as inputs, all other layers have hidden_states as inputs
         if self.mapping.is_first_pp_rank():
@@ -1141,14 +1141,14 @@ class DecoderModel(Module, GenerationMixin):
                                         ]))
 
         last_token_ids = None
-        if self.mapping.is_last_pp_rank():
-            last_token_ids = Tensor(
-                name="last_token_ids",
-                dtype=trt.int32,
-                shape=[-1],
-                dim_range=OrderedDict([("batch_size_last_token_ids", [bb_range])
-                                       ]),
-            )
+        # if self.mapping.is_last_pp_rank():
+        #     last_token_ids = Tensor(
+        #         name="last_token_ids",
+        #         dtype=trt.int32,
+        #         shape=[-1],
+        #         dim_range=OrderedDict([("batch_size_last_token_ids", [bb_range])
+        #                                ]),
+        #     )
 
         if not use_gpt_attention_plugin:
             attention_mask = Tensor(

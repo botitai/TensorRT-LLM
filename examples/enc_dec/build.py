@@ -224,7 +224,11 @@ def parse_arguments(component):
         help=
         'This option is introduced with trt 9.1.0.1+ and will reduce the building time significantly for fp8.'
     )
-
+    parser.add_argument(
+        "--gather_all_token_logits",
+        default=True,
+        action="store_true",
+    )
     # parse cmdline args
     args = parser.parse_args()
     logger.set_level(args.log_level)
@@ -458,7 +462,8 @@ def build(rank, args):
             cross_attention=(args.component == 'decoder'),
             has_position_embedding=args.has_position_embedding,
             has_token_type_embedding=args.has_token_type_embedding,
-            strongly_typed=args.strongly_typed)
+            strongly_typed=args.strongly_typed,
+            gather_all_token_logits=args.gather_all_token_logits)
 
         engine_name = get_engine_name(args.engine_name, args.dtype,
                                       args.tp_size, args.pp_size, cur_rank)
