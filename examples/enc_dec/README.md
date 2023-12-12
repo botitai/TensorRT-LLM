@@ -129,3 +129,74 @@ mpirun --allow-run-as-root -np 4 python3 run.py --engine_dir tmp/trt_engines/fla
 - Flan-T5 models have known issues regarding FP16 precision and using BF16 precision is recommended, regardless of TRT-LLM. While we are working on improving FP16 results, please stay with FP32 or BF16 precision for Flan-T5 family.
 - Batched/Ragged input with beam search is having subtle issues with some sequence results being truncated. For the time being, please follow (1) if batch size = 1, no problem (2) if batched input is padded (i.e., not using `--remove_input_padding` flag), no problem (3) if batched input is ragged (i.e., using `--remove_input_padding`), only use greedy search for now.
 - For T5 and Flan-T5 family that have relative attention bias design, the relative attention table is split along `num_heads` dimension in Tensor Parallelism mode. Therefore, `num_heads` must be divisible by `tp_size`. Please be aware of this when setting the TP parameter.
+
+### Exmaple
+1. Test flan-t5-small
+```bash
+git clone https://huggingface.co/google/flan-t5-small tmp/hf_models/flan-t5-small
+python t5/hf_convert.py -i tmp/hf_models/flan-t5-small -o tmp/trt_models/flan-t5-small --weight_data_type float32 --inference_tensor_para_size 1
+python build.py --model_type t5 \
+                --weight_dir tmp/trt_models/flan-t5-small/tp1 \
+                -o tmp/trt_engines/flan-t5-small/1-gpu \
+                --engine_name flan-t5-small \
+                --remove_input_padding \
+                --use_bert_attention_plugin \
+                --use_gpt_attention_plugin \
+                --use_gemm_plugin \
+                --use_rmsnorm_plugin \
+                --dtype float32 \
+                --max_beam_width 1
+python3 run.py --engine_dir tmp/trt_engines/flan-t5-small/1-gpu/float32/tp1 --engine_name flan-t5-small --model_name tmp/hf_models/flan-t5-small --max_new_token=64 --num_beams=1 --compare_hf_fp32
+```
+
+2. Test flant-t5-base
+```bash
+git clone https://huggingface.co/google/flan-t5-base tmp/hf_models/flan-t5-base
+python t5/hf_convert.py -i tmp/hf_models/flan-t5-base -o tmp/trt_models/flan-t5-base --weight_data_type float32 --inference_tensor_para_size 1
+python build.py --model_type t5 \
+                --weight_dir tmp/trt_models/flan-t5-base/tp1 \
+                -o tmp/trt_engines/flan-t5-base/1-gpu \
+                --engine_name flan-t5-base \
+                --remove_input_padding \
+                --use_bert_attention_plugin \
+                --use_gpt_attention_plugin \
+                --use_gemm_plugin \
+                --use_rmsnorm_plugin \
+                --dtype float32 \
+                --max_beam_width 1
+python3 run.py --engine_dir tmp/trt_engines/flan-t5-base/1-gpu/float32/tp1 --engine_name flan-t5-base --model_name tmp/hf_models/flan-t5-base --max_new_token=64 --num_beams=1 --compare_hf_fp32
+```
+3. Test flan-t5-large
+```bash
+git clone https://huggingface.co/google/flan-t5-large tmp/hf_models/flan-t5-large
+python t5/hf_convert.py -i tmp/hf_models/flan-t5-large -o tmp/trt_models/flan-t5-large --weight_data_type float32 --inference_tensor_para_size 1
+python build.py --model_type t5 \
+                --weight_dir tmp/trt_models/flan-t5-large/tp1 \
+                -o tmp/trt_engines/flan-t5-large/1-gpu \
+                --engine_name flan-t5-large \
+                --remove_input_padding \
+                --use_bert_attention_plugin \
+                --use_gpt_attention_plugin \
+                --use_gemm_plugin \
+                --use_rmsnorm_plugin \
+                --dtype float32 \
+                --max_beam_width 1
+python3 run.py --engine_dir tmp/trt_engines/flan-t5-large/1-gpu/float32/tp1 --engine_name flan-t5-large --model_name tmp/hf_models/flan-t5-large --max_new_token=64 --num_beams=1 --compare_hf_fp32
+```
+4. Test GotItAI/flan-t5-large_abc_task_prefix_palm_gt_alpha0.5_1024_batch4_grad4_lr5e-05_7epochs
+```bash
+git clone https://huggingface.co/GotItAI/flan-t5-large_abc_task_prefix_palm_gt_alpha0.5_1024_batch4_grad4_lr5e-05_7epochs tmp/hf_models/flan-t5-large-abc
+python t5/hf_convert.py -i tmp/hf_models/flan-t5-large-abc -o tmp/trt_models/flan-t5-large-abc --weight_data_type float32 --inference_tensor_para_size 1
+python build.py --model_type t5 \
+                --weight_dir tmp/trt_models/flan-t5-large-abc/tp1 \
+                -o tmp/trt_engines/flan-t5-large-abc/1-gpu \
+                --engine_name flan-t5-large-abc \
+                --remove_input_padding \
+                --use_bert_attention_plugin \
+                --use_gpt_attention_plugin \
+                --use_gemm_plugin \
+                --use_rmsnorm_plugin \
+                --dtype float32 \
+                --max_beam_width 1
+python3 run.py --engine_dir tmp/trt_engines/flan-t5-large-abc/1-gpu/float32/tp1 --engine_name flan-t5-large-abc --model_name tmp/hf_models/flan-t5-large-abc --max_new_token=64 --num_beams=1 --compare_hf_fp32
+```
