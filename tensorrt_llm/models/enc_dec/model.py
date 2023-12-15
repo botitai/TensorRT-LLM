@@ -892,7 +892,8 @@ class DecoderModel(Module, GenerationMixin):
             # See https://github.com/huggingface/transformers/blob/0b192de1f353b0e04dad4813e02e2c672de077be/src/transformers/models/t5/modeling_t5.py#L1769-L1772
             # Note: this is specific for T5, to make it more generic, one can pass in a config:
             #   self.config.tie_word_embeddings - default to be True for T5
-            hidden_states = hidden_states * (self.hidden_size**-0.5)
+            
+            # hidden_states = hidden_states * (self.hidden_size**-0.5)
 
             # [bs, hidden_size] -> [bs, vocab_size]
             lm_logits = self.lm_head(hidden_states)

@@ -149,7 +149,7 @@ python build.py --model_type t5 \
 python3 run.py --engine_dir tmp/trt_engines/flan-t5-small/1-gpu/float32/tp1 --engine_name flan-t5-small --model_name tmp/hf_models/flan-t5-small --max_new_token=64 --num_beams=1 --compare_hf_fp32
 ```
 
-2. Test flant-t5-base
+2. Test flan-t5-base
 ```bash
 git clone https://huggingface.co/google/flan-t5-base tmp/hf_models/flan-t5-base
 python t5/hf_convert.py -i tmp/hf_models/flan-t5-base -o tmp/trt_models/flan-t5-base --weight_data_type float32 --inference_tensor_para_size 1
@@ -199,4 +199,22 @@ python build.py --model_type t5 \
                 --dtype float32 \
                 --max_beam_width 1
 python3 run.py --engine_dir tmp/trt_engines/flan-t5-large-abc/1-gpu/float32/tp1 --engine_name flan-t5-large-abc --model_name tmp/hf_models/flan-t5-large-abc --max_new_token=64 --num_beams=1 --compare_hf_fp32
+```
+5. Test GotItAI/flan_t5_large_ft_on_gt_rocketbook_retrain
+```bash
+git clone https://huggingface.co/GotItAI/flan_t5_large_ft_on_gt_rocketbook_retrain tmp/hf_models/tc
+python t5/hf_convert.py -i tmp/hf_models/tc -o tmp/trt_models/tc --weight_data_type float32 --inference_tensor_para_size 1
+python build.py --model_type t5 \
+                --weight_dir tmp/trt_models/tc/tp1 \
+                -o tmp/trt_engines/tc/1-gpu \
+                --engine_name truthchecker \
+                --remove_input_padding \
+                --use_bert_attention_plugin \
+                --use_gpt_attention_plugin \
+                --use_gemm_plugin \
+                --use_rmsnorm_plugin \
+                --dtype float32 \
+                --max_beam_width 1 \
+                --max_batch_size 1
+python3 run.py --engine_dir tmp/trt_engines/tc/1-gpu/float32/tp1 --engine_name truthchecker --model_name tmp/hf_models/tc --max_new_token=64 --num_beams=1 --compare_hf_fp32
 ```
